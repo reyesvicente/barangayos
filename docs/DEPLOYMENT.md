@@ -463,6 +463,54 @@ Once the cert is trusted, the PWA install button will appear in the sidebar.
   HTTPS:  https://192.168.x.x:8443    (PWA installable)
 ```
 
+### Bonus: Access via a friendly `.local` hostname instead of an IP
+
+Builds on Option D — instead of remembering/typing `https://192.168.x.x:8443`, reach the app at something like `https://barangayos.local:8443`. No router config or DNS server needed: Windows 10+, macOS, iOS, and Android all resolve `.local` names on the LAN natively via mDNS (multicast DNS) — the server machine just needs to answer to that hostname.
+
+**Step 1: Rename the server machine's hostname**
+
+mDNS auto-publishes a machine as `<hostname>.local`, so the server itself must be renamed (there's no separate DNS record to create):
+
+```powershell
+Rename-Computer -NewName barangayos -Restart
+```
+
+(Or: Settings → System → About → Rename this PC.) A reboot is required for the new name to take effect.
+
+**Step 2: Verify it resolves from another device on the LAN**
+
+```powershell
+ping barangayos.local
+```
+
+If this doesn't resolve, the network is likely blocking multicast traffic (common on guest/enterprise Wi-Fi VLANs) — fall back to the LAN IP from Option D.
+
+**Step 3: Reissue the cert to include the `.local` hostname**
+
+`generate-certs.ps1` only certs the LAN IP, so `https://barangayos.local` would fail certificate validation. Regenerate the cert with the hostname added as an extra SAN (keeps the IP working too):
+
+```powershell
+cd backend\certs
+mkcert -cert-file cert.pem -key-file cert-key.pem barangayos.local <LAN_IP> localhost 127.0.0.1
+```
+
+Replace `<LAN_IP>` with the IP `generate-certs.ps1` detected/printed earlier.
+
+**Step 4: Restart the stack**
+
+```powershell
+cd backend
+docker compose up -d --build
+```
+
+nginx's `server_name _;` is a catch-all vhost, so no nginx config change is needed for the new hostname.
+
+**Step 5: Access the app**
+
+Open `https://barangayos.local:8443` on any device on the LAN. Same first-time cert trust as Option D — visit once and accept the warning, or install the mkcert root CA on each device.
+
+**Why bother over the plain IP:** the hostname survives DHCP reassigning the server's IP address later — devices keep working at `barangayos.local` without needing new certs or bookmarks.
+
 ---
 
 ## Option E: DigitalOcean Droplet (Backend Only)
