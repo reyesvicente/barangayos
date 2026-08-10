@@ -9,6 +9,7 @@ services:
       - pb_data:/pb/pb_data
     environment:
       - GOMEMLIMIT=512MiB
+      - PB_ENCRYPTION_KEY=${PB_ENCRYPTION_KEY:-}
     command: >
       /pb/pocketbase serve
       --http=0.0.0.0:8090
