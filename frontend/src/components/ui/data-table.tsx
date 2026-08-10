@@ -331,10 +331,6 @@ function DataTableInner<T>({
     )
   }
 
-  if (data.length === 0) {
-    return <div className={cn('motion-fade-in flex flex-col flex-1', className)}>{emptyState}</div>
-  }
-
   const displayRows = table.getRowModel().rows
   const showFilters = columns.some(c => c.filterType)
   const currentPage = hasExternalPagination ? (externalPage ?? 1) : table.getState().pagination.pageIndex + 1
@@ -370,6 +366,9 @@ function DataTableInner<T>({
             pageSize={externalPageSize}
           />
         )}
+        {data.length === 0 ? (
+          <div className="flex flex-col flex-1 min-h-0">{emptyState}</div>
+        ) : (
         <div
           ref={scrollRef}
           className={cn('table-scroll overflow-x-auto overflow-y-auto flex-1 min-h-0', isScrollbarHover && 'table-scroll--hover')}
@@ -490,6 +489,7 @@ function DataTableInner<T>({
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   )
