@@ -1,0 +1,40 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Rebuild and restart PocketBase
+    runs-on: [self-hosted, barangay-backend]
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Rebuild and restart pocketbase
+        run: docker compose up -d --build pocketbase
+
+      - name: Wait for health check
+        run: |
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:8090/api/health > /dev/null; then
+              echo "PocketBase is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PocketBase did not become healthy in time"
+          docker compose logs --tail 100 pocketbase
+          exit 1

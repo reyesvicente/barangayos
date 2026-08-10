@@ -135,22 +135,24 @@ cloudflared tunnel route dns barangayos records.barangay.gov.ph
 
 #### 1h. Install as a service
 
+The tunnel created in Step 1e is a **locally-managed** tunnel (credentials live in `config.yml`), not a dashboard-managed one — so `service install` takes no token here. Point it at the config file explicitly so it doesn't get lost if `service install` runs under a different user/HOME than the one that created it (e.g. via `sudo`):
+
 **Windows** (admin PowerShell):
 
 ```powershell
-cloudflared.exe service install <TUNNEL_TOKEN>
+cloudflared.exe --config C:\ProgramData\cloudflared\config.yml service install
 Start-Service cloudflared
 ```
 
 **Linux:**
 
 ```bash
-sudo cloudflared service install <TUNNEL_TOKEN>
+sudo cloudflared --config ~/.cloudflared/config.yml service install
 sudo systemctl start cloudflared
 sudo systemctl enable cloudflared
 ```
 
-> The tunnel token is found in Cloudflare Dashboard → Zero Trust → Access → Tunnels.
+> A tunnel *token* (long base64 string) only exists for tunnels created via Cloudflare Dashboard → Zero Trust → Access → Tunnels. Passing the tunnel *ID/UUID* to `service install` instead of a token fails with `illegal base64 data` — if you created the tunnel with `cloudflared tunnel create` like above, skip the token entirely and use `--config` as shown.
 
 #### 1i. Verify
 
@@ -460,6 +462,155 @@ Once the cert is trusted, the PWA install button will appear in the sidebar.
   HTTP:   http://192.168.x.x:8080     (no PWA, no install)
   HTTPS:  https://192.168.x.x:8443    (PWA installable)
 ```
+
+---
+
+## Option E: DigitalOcean Droplet (Backend Only)
+
+Runs just the PocketBase backend on a DigitalOcean Droplet, reachable via Cloudflare Tunnel. No inbound ports are opened on the Droplet — the tunnel makes an outbound-only connection — so this is one of the smallest attack surfaces available. The frontend is built and hosted separately (e.g. Cloudflare Pages, another Droplet, or LAN as in Option A) and simply points `VITE_API_URL` at the tunnel hostname below.
+
+### Step 1: Create the Droplet
+
+Dashboard: **Create → Droplets**
+
+| Setting | Recommendation |
+|---|---|
+| Image | Ubuntu 24.04 LTS |
+| Plan | Basic, Regular, **1 vCPU / 2 GB / 50 GB SSD** (~$12/mo) — PocketBase itself is light (`GOMEMLIMIT=512MiB`), but Docker + OS + cloudflared want headroom |
+| Region | Closest to your users |
+| Auth | SSH key (not password) |
+| Backups | Enable DO's Droplet backups as a second layer alongside PocketBase's own R2 backups (Step 5 below) |
+
+Or via `doctl`:
+
+```bash
+doctl compute droplet create barangay-backend \
+  --image ubuntu-24-04-x64 \
+  --size s-1vcpu-2gb \
+  --region sgp1 \
+  --ssh-keys <your-ssh-key-fingerprint> \
+  --enable-backups
+```
+
+### Step 2: Harden the server
+
+```bash
+ssh root@<droplet-ip>
+adduser deploy && usermod -aG sudo deploy
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow OpenSSH
+ufw enable
+```
+
+Because Cloudflare Tunnel connects outbound, ports 80/443/8090 never need to be opened.
+
+### Step 3: Install Docker and cloudflared
+
+```bash
+curl -fsSL https://get.docker.com | sh
+usermod -aG docker deploy
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+chmod +x /usr/local/bin/cloudflared
+```
+
+### Step 4: Deploy PocketBase
+
+```bash
+su - deploy
+git clone https://github.com/YOUR_USER/barangayos.git
+cd barangayos/backend
+export PB_ENCRYPTION_KEY=$(openssl rand -hex 16)   # save this value securely, it decrypts settings
+docker compose up -d pocketbase        # only the pocketbase service — no nginx/frontend here
+docker compose logs -f pocketbase      # confirm a clean start
+```
+
+Persist the encryption key across reboots by adding it to `/etc/environment`:
+
+```bash
+echo "PB_ENCRYPTION_KEY=your-32-char-hex-key" | sudo tee -a /etc/environment
+```
+
+### Step 5: Cloudflare Tunnel to PocketBase
+
+Same flow as Option A, Step 1, but ingress points directly at PocketBase's port instead of nginx:
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create barangay-backend
+```
+
+`~/.cloudflared/config.yml`:
+
+```yaml
+tunnel: <TUNNEL_UUID>
+credentials-file: /home/deploy/.cloudflared/<TUNNEL_UUID>.json
+ingress:
+  - hostname: api.records.barangay.gov.ph
+    service: http://localhost:8090
+  - service: http_status:404
+```
+
+```bash
+cloudflared tunnel route dns barangay-backend api.records.barangay.gov.ph
+```
+
+Before installing the service, double-check `credentials-file:` in `config.yml` points at the actual file `cloudflared tunnel create` wrote (e.g. `/home/deploy/.cloudflared/<TUNNEL_UUID>.json`), not a literal placeholder.
+
+This is a **locally-managed** tunnel (created via CLI above), so `service install` takes no token — pass `--config` explicitly instead, so it doesn't get lost if `sudo` switches `$HOME` away from the user that created the tunnel:
+
+```bash
+sudo cloudflared --config /home/deploy/.cloudflared/config.yml service install
+sudo systemctl enable --now cloudflared
+sudo systemctl status cloudflared
+```
+
+> Passing the tunnel ID/UUID as a token (`cloudflared service install <TUNNEL_UUID>`) fails with `illegal base64 data` — a token only exists for tunnels created via the Zero Trust dashboard.
+
+### Step 6: Verify
+
+```bash
+curl http://localhost:8090/api/health                       # on the droplet
+curl https://api.records.barangay.gov.ph/api/health          # from anywhere
+```
+
+### Step 7: Point the frontend at it
+
+Wherever the frontend is built or hosted, set:
+
+```env
+VITE_API_URL=https://api.records.barangay.gov.ph
+```
+
+### Updating
+
+**Automatic (recommended):** a self-hosted GitHub Actions runner on the Droplet picks up pushes to `main` that touch `backend/**` and rebuilds/restarts the `pocketbase` service — see `.github/workflows/deploy-backend.yml`. Set it up once:
+
+```bash
+mkdir /opt/actions-runner && cd /opt/actions-runner
+# Download the runner package from GitHub — Settings → Actions → Runners → New self-hosted runner
+./config.sh --url https://github.com/YOUR_USER/barangayos --token YOUR_TOKEN --labels barangay-backend
+sudo ./svc.sh install
+sudo ./svc.sh start
+```
+
+Because the runner connects outbound to GitHub (same as `cloudflared`), no inbound ports or SSH secrets are needed — the deploy key/secrets never leave the Droplet. Also create `backend/.env` on the Droplet (gitignored, never committed) so `docker compose` picks up the encryption key on every automated rebuild:
+
+```bash
+echo "PB_ENCRYPTION_KEY=your-32-char-hex-key" > ~/barangayos/backend/.env
+```
+
+**Manual fallback:**
+
+```bash
+cd barangayos/backend
+git pull
+docker compose up -d --build pocketbase
+```
+
+### Database backups
+
+Configure R2 backups from the PocketBase Admin UI exactly as in Option A, Step 5 — this works the same regardless of where the container is hosted.
 
 ---
 
