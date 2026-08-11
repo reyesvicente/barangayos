@@ -63,6 +63,20 @@ const FEMALE_NAMES = [
 
 const PUROKS = ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Sitio Central']
 
+const BARANGAY_ADDRESS = {
+  region: 'Region III (Central Luzon)',
+  province: 'Bulacan',
+  city_municipality: 'San Jose del Monte',
+  barangay: 'Poblacion',
+}
+
+const RELIGIONS = [
+  'Islam', 'Iglesia ni Cristo', 'Christian', 'Aglipayan Church',
+  'Seventh-day Adventist', 'Bible Baptist Church', "Jehovah's Witnesses",
+]
+
+const CIVIL_STATUSES = ['Single/Never Married', 'Married', 'Widowed', 'Separated'] as const
+
 const OCCUPATIONS = [
   'Teacher', 'Farmer', 'Fisherfolk', 'Driver', 'Vendor', 'Carpenter',
   'Government Employee', 'Housewife', 'Student', 'Tricycle Driver',
@@ -283,13 +297,13 @@ function capitalize(s: string): string {
 function extractError(e: unknown): string {
   if (e instanceof Error && 'original' in e) {
     const orig = (e as any).original
-    if (orig?.data?.message) return orig.data.message
-    if (orig?.data?.data) {
+    if (orig?.data?.data && Object.keys(orig.data.data).length > 0) {
       const fields = Object.entries(orig.data.data)
       return fields.map(([k, v]: [string, any]) => `${k}: ${v?.message ?? v?.code ?? ''}`).join(', ')
     }
+    if (orig?.data?.message) return orig.data.message
   }
-  return extractError(e)
+  return e instanceof Error ? e.message : String(e)
 }
 
 export async function seedCollections(
@@ -332,28 +346,34 @@ export async function seedCollections(
       const firstName = isMale ? pick(MALE_NAMES) : pick(FEMALE_NAMES)
       const lastName = pick(LAST_NAMES)
       const age = randomAge(1, 90)
-      const civilStatus: ('single' | 'married' | 'widowed' | 'separated')[] =
-        age < 18 ? ['single'] : ['single', 'married', 'widowed', 'separated']
+      const civilStatus = age < 18 ? ['Single/Never Married'] as const : CIVIL_STATUSES
       const birthDate = age > 0
         ? new Date(Date.now() - age * 365.25 * 86400000 - Math.random() * 180 * 86400000).toISOString().split('T')[0]
         : undefined
 
       try {
         const res = await createResident({
+          type_of_resident: Math.random() > 0.9 ? pick(['Migrant', 'Transient']) : 'Non-migrant',
           first_name: firstName,
           middle_name: Math.random() > 0.4 ? pick(LAST_NAMES) : undefined,
           last_name: lastName,
           ext_name: Math.random() > 0.85 ? pick(['Jr.', 'Sr.', 'II', 'III']) : undefined,
           date_of_birth: birthDate,
+          place_of_birth: `${BARANGAY_ADDRESS.city_municipality}, ${BARANGAY_ADDRESS.province}`,
           sex: isMale ? 'Male' : 'Female',
           mobile_number: `09${String(Math.floor(100000000 + Math.random() * 900000000))}`,
           household_id: householdIds.length > 0 && Math.random() > 0.3
             ? pick(householdIds)
             : undefined,
+          region: BARANGAY_ADDRESS.region,
+          province: BARANGAY_ADDRESS.province,
+          city_municipality: BARANGAY_ADDRESS.city_municipality,
+          barangay: BARANGAY_ADDRESS.barangay,
           sitio_purok: pick(PUROKS),
           civil_status: pick(civilStatus),
           profession_occupation: age > 15 ? pick(OCCUPATIONS) : undefined,
-          nationality: 'Filipino',
+          nationality: 'Filipino Citizen',
+          religion: Math.random() > 0.8 ? pick(RELIGIONS) : 'Roman Catholic',
           registered_voter: age >= 18 ? Math.random() > 0.15 : false,
           government_assistance_programs: Math.random() > 0.85 ? ['4Ps'] : [],
           senior_citizen: age >= 60,
