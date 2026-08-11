@@ -77,6 +77,12 @@ const RELIGIONS = [
 
 const CIVIL_STATUSES = ['Single/Never Married', 'Married', 'Widowed', 'Separated'] as const
 
+const HOUSEHOLD_TYPES = ['Nuclear Family', 'Extended Family', 'Single/Solo Parent Family', 'Childless Family', 'Blended/Stepfamily', 'Single Person Household']
+
+const TENURE_STATUSES = ['Owner', 'Renter']
+
+const HOUSEHOLD_UNITS = ['Single House', 'Duplex', 'Townhouse/Rowhouse', 'Condominium', 'Apartment']
+
 const OCCUPATIONS = [
   'Teacher', 'Farmer', 'Fisherfolk', 'Driver', 'Vendor', 'Carpenter',
   'Government Employee', 'Housewife', 'Student', 'Tricycle Driver',
@@ -327,8 +333,15 @@ export async function seedCollections(
         const hh = await createHousehold({
           household_number: hhNumber,
           household_name: headNames[i],
+          region: BARANGAY_ADDRESS.region,
+          province: BARANGAY_ADDRESS.province,
+          city_municipality: BARANGAY_ADDRESS.city_municipality,
+          barangay: BARANGAY_ADDRESS.barangay,
           sitio_purok: pick(PUROKS),
           household_complete_address: `${pick(PUROKS)}, Barangay Poblacion`,
+          household_type: pick(HOUSEHOLD_TYPES),
+          tenure_status: pick(TENURE_STATUSES),
+          household_unit: pick(HOUSEHOLD_UNITS),
         })
         householdIds.push(hh.id)
         total++
