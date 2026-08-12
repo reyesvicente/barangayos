@@ -12,8 +12,8 @@ function getGreeting(): string {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('admin@example.com')
+  const [password, setPassword] = useState('123foobar123!')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
