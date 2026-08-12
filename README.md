@@ -1,5 +1,5 @@
 ﻿<div align="center">
-  <h1>BarangayOS</h1>
+  <h1>Manila Management System</h1>
   <p align="center">
     <strong>A modern document and records management system for Philippine Barangay LGUs</strong>
   </p>

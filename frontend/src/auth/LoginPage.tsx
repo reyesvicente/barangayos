@@ -46,8 +46,9 @@ export default function LoginPage() {
         />
 
         {/* Brand mark on mobile — overlaid on illustration */}
-        <div className="absolute left-6 top-6 z-20 lg:hidden">
-          <img src="/standard-logo.png" alt="" className="h-10 w-auto object-contain" />
+        <div className="absolute left-6 top-6 z-20 flex items-center gap-2 lg:hidden">
+          <img src="/Ph_seal_ncr_manila.svg" alt="" className="size-8 object-contain" />
+          <span className="font-display text-base font-bold text-white">Manila Barangay Management System</span>
         </div>
 
         {/* Illustration — fills the entire panel */}
@@ -72,10 +73,13 @@ export default function LoginPage() {
           {/* Branding */}
           <div className="text-center">
             <img
-              src="/standard-logo.png"
-              alt="Manila Management System Prototype"
-              className="mx-auto w-full max-w-xs object-contain"
+              src="/Ph_seal_ncr_manila.svg"
+              alt="Manila Barangay Management System Prototype"
+              className="mx-auto size-16 object-contain"
             />
+            <p className="mt-3 font-display text-2xl font-bold text-barangay">
+              Manila Barangay Management System
+            </p>
             <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.2em] text-narra">
               {greeting}
             </p>
@@ -86,7 +90,7 @@ export default function LoginPage() {
 
           {/* Form */}
           <div className="mt-10">
-            
+
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {/* Email field */}
@@ -129,7 +133,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              
+
 
               {/* Error */}
               {error && (
@@ -162,7 +166,7 @@ export default function LoginPage() {
           <div className="mt-10 text-center font-display text-xs text-gray-400">
 
             <a
-              href="https://github.com/rodneydelacruz/barangayos/blob/main/docs/PRIVACY_NOTICE.md"
+              href="https://github.com/reyesvicente/barangayos/blob/main/docs/PRIVACY_NOTICE.md"
               target="_blank"
               rel="noopener noreferrer"
               className="font-display font-medium text-gray-500 underline transition-colors hover:text-gray-600"
@@ -171,7 +175,7 @@ export default function LoginPage() {
             </a>
             <span className="mx-1.5 font-display text-gray-300">&middot;</span>
             <a
-              href="https://github.com/rodneydelacruz/barangayos/blob/main/docs/TERMS_OF_USE.md"
+              href="https://github.com/reyesvicente/barangayos/blob/main/docs/TERMS_OF_USE.md"
               target="_blank"
               rel="noopener noreferrer"
               className="font-display font-medium text-gray-500 underline transition-colors hover:text-gray-600"
@@ -180,7 +184,7 @@ export default function LoginPage() {
             </a>
             <span className="mx-1.5 font-display text-gray-300">&middot;</span>
             <a
-              href="https://github.com/rodneydelacruz/barangayos/blob/main/docs/DATA_PROCESSING_AGREEMENT.md"
+              href="https://github.com/reyesvicente/barangayos/blob/main/docs/DATA_PROCESSING_AGREEMENT.md"
               target="_blank"
               rel="noopener noreferrer"
               className="font-display font-medium text-gray-500 underline transition-colors hover:text-gray-600"

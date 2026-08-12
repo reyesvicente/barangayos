@@ -55,11 +55,11 @@ export default function Layout() {
           <Menu className="size-5" />
         </button>
         <img
-          src="/icon-logo.png"
-          alt="Manila Management System Prototype"
+          src="/Ph_seal_ncr_manila.svg"
+          alt="Manila Management System"
           className="size-8 shrink-0 rounded-md object-contain"
         />
-        <span className="font-display text-sm font-semibold">Manila Management System Prototype</span>
+        <span className="font-display text-sm font-semibold">Manila Management System</span>
       </header>
 
       <Sidebar pinned={pinned} onTogglePin={togglePinned} mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />
@@ -68,7 +68,7 @@ export default function Layout() {
         {brgyName && (
           <div className="sticky top-0 z-30 hidden border-b bg-card px-5 py-2 md:flex md:items-center motion-fade-in">
             <img
-              src="/standard-logo.png"
+              src="/Ph_seal_ncr_manila.svg"
               alt=""
               className="h-10 w-auto object-contain shrink-0"
             />
