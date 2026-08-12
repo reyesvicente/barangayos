@@ -214,11 +214,11 @@ export default function Sidebar({ pinned, onTogglePin, mobileOpen, onMobileOpenC
             <>
               <img
                 src="/icon-logo.png"
-                alt="BarangayOS"
+                alt="Manila Management System Prototype"
                 className="size-8 shrink-0 rounded-md object-contain"
               />
               <span className="font-display min-w-0 flex-1 truncate text-sm font-semibold text-sidebar-foreground">
-                B-OS v1.0.1
+                MMS Prototype v1.0.1
               </span>
               {pinned && !mobileOpen && (
                 <button

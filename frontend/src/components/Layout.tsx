@@ -56,10 +56,10 @@ export default function Layout() {
         </button>
         <img
           src="/icon-logo.png"
-          alt="BarangayOS"
+          alt="Manila Management System Prototype"
           className="size-8 shrink-0 rounded-md object-contain"
         />
-        <span className="font-display text-sm font-semibold">BarangayOS</span>
+        <span className="font-display text-sm font-semibold">Manila Management System Prototype</span>
       </header>
 
       <Sidebar pinned={pinned} onTogglePin={togglePinned} mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />

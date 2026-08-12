@@ -73,7 +73,7 @@ export default function LoginPage() {
           <div className="text-center">
             <img
               src="/standard-logo.png"
-              alt="BarangayOS"
+              alt="Manila Management System Prototype"
               className="mx-auto w-full max-w-xs object-contain"
             />
             <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.2em] text-narra">

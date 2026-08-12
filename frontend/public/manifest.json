@@ -1,6 +1,6 @@
 {
-  "name": "BarangayOS",
-  "short_name": "BarangayOS",
+  "name": "Manila Management System Prototype",
+  "short_name": "MMS Prototype",
   "description": "Barangay Records Management System — digital tools for Philippine LGU governance",
   "start_url": "/",
   "display": "standalone",
