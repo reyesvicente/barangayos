@@ -40,7 +40,7 @@ export default function LoginPage() {
         {/* Brand mark on mobile — overlaid on illustration */}
         <div className="absolute left-6 top-6 z-20 flex items-center gap-2 lg:hidden">
           <img src="/Ph_seal_ncr_manila.svg" alt="" className="size-8 object-contain" />
-          <span className="font-display text-base font-bold text-white">Manila Barangay Management System</span>
+          <span className="font-display text-base font-bold text-white">MANILA Barangay Information Management System</span>
         </div>
 
         {/* Bottom accent line */}
@@ -58,11 +58,11 @@ export default function LoginPage() {
           <div className="text-center">
             <img
               src="/Ph_seal_ncr_manila.svg"
-              alt="Manila Barangay Management System Prototype"
+              alt="MANILA Barangay Information Management System"
               className="mx-auto size-16 object-contain"
             />
             <p className="mt-3 font-display text-2xl font-bold text-barangay">
-              Manila Barangay Management System
+              MANILA Barangay Information Management System
             </p>
           </div>
 

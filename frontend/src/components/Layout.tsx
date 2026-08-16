@@ -56,10 +56,10 @@ export default function Layout() {
         </button>
         <img
           src="/Ph_seal_ncr_manila.svg"
-          alt="Manila Management System"
+          alt="MANILA Barangay Information Management System"
           className="size-8 shrink-0 rounded-md object-contain"
         />
-        <span className="font-display text-sm font-semibold">Manila Management System</span>
+        <span className="font-display text-sm font-semibold">MBIMS</span>
       </header>
 
       <Sidebar pinned={pinned} onTogglePin={togglePinned} mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />
