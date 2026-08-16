@@ -223,11 +223,11 @@ export default function Sidebar({ pinned, onTogglePin, mobileOpen, onMobileOpenC
             <>
               <img
                 src="/Ph_seal_ncr_manila.svg"
-                alt="Manila Management System"
+                alt="MANILA Barangay Information Management System"
                 className="size-8 shrink-0 rounded-md object-contain"
               />
               <span className="font-display min-w-0 flex-1 truncate text-sm font-semibold text-sidebar-foreground">
-                MMS v1.0.1
+                MBIMS v1.0.1
               </span>
               {pinned && !mobileOpen && (
                 <button

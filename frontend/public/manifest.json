@@ -1,6 +1,6 @@
 {
-  "name": "Manila Management System",
-  "short_name": "MMS",
+  "name": "MANILA Barangay Information Management System",
+  "short_name": "MANILA",
   "description": "Barangay Records Management System — digital tools for Philippine LGU governance",
   "start_url": "/",
   "display": "standalone",
