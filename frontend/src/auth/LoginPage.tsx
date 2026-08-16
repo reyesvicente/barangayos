@@ -62,7 +62,9 @@ export default function LoginPage() {
               className="mx-auto size-16 object-contain"
             />
             <p className="mt-3 font-display text-2xl font-bold text-barangay">
-              MANILA Barangay Information Management System
+              MANILA
+              <br />
+              Barangay Information Management System
             </p>
           </div>
 
