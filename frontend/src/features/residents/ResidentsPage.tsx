@@ -1,5 +1,5 @@
 import { useBodyScrollLock } from '@/lib/useBodyScrollLock'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { Plus, ChevronDown, Search, Home, FileText, BookOpen, Activity, User, Fingerprint, Gift, Phone, Vote, Shield, Users } from 'lucide-react'
 import { getResidents, createResident, updateResident, deleteResident, type InhabitantData, type ApiResident } from '@/api/residents'
@@ -320,6 +320,9 @@ export default function ResidentsPage() {
   const [flyoutBlotters, setFlyoutBlotters] = useState<ApiBlotter[]>([])
   const [flyoutActivities, setFlyoutActivities] = useState<ApiActivity[]>([])
   const [flyoutLoading, setFlyoutLoading] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState<
+    'all' | 'voters' | 'non_voters' | 'seniors' | 'pwd' | 'solo_parents'
+  >('all')
 
   const { data: genderOptions } = useLookups('gender_options')
   const { data: civilStatusOptions } = useLookups('civil_status')
@@ -561,6 +564,26 @@ export default function ResidentsPage() {
     }
   }
 
+  const categoryChips: { key: typeof categoryFilter; label: string; count: number }[] = [
+    { key: 'all', label: 'All', count: residents.length },
+    { key: 'voters', label: 'Voters', count: residents.filter((r) => r.registered_voter).length },
+    { key: 'non_voters', label: 'Non-voters', count: residents.filter((r) => !r.registered_voter).length },
+    { key: 'seniors', label: 'Seniors', count: residents.filter((r) => r.senior_citizen).length },
+    { key: 'pwd', label: 'PWD', count: residents.filter((r) => r.pwd).length },
+    { key: 'solo_parents', label: 'Solo Parents', count: residents.filter((r) => r.single_solo_parent).length },
+  ]
+
+  const filteredResidents = useMemo(() => {
+    switch (categoryFilter) {
+      case 'voters': return residents.filter((r) => r.registered_voter)
+      case 'non_voters': return residents.filter((r) => !r.registered_voter)
+      case 'seniors': return residents.filter((r) => r.senior_citizen)
+      case 'pwd': return residents.filter((r) => r.pwd)
+      case 'solo_parents': return residents.filter((r) => r.single_solo_parent)
+      default: return residents
+    }
+  }, [residents, categoryFilter])
+
   const columns: Column<ApiResident>[] = [
     { key: 'last_name', label: 'Name', sortable: true, filterType: 'text',
       filterValue: (r) => `${r.last_name}, ${r.first_name}${r.middle_name ? ' ' + r.middle_name : ''}`,
@@ -606,15 +629,33 @@ export default function ResidentsPage() {
         </div>
       </PageHeader>
 
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {categoryChips.map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            onClick={() => setCategoryFilter(chip.key)}
+            className={cn(
+              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              categoryFilter === chip.key
+                ? 'border-barangay bg-barangay text-white'
+                : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+            )}
+          >
+            {chip.label} <span className="opacity-70">({chip.count})</span>
+          </button>
+        ))}
+      </div>
+
       <Card lifted={false} className="shadow-none">
         <CardContent className="p-0">
           <DataTable
             columns={columns}
-            data={residents}
+            data={filteredResidents}
             loading={loading}
             onRowClick={(r) => openFlyout(r)}
             emptyState={
-              residents.length === 0
+              filteredResidents.length === 0
                 ? <EmptyState title="No residents yet" description="Add your first resident." action={canModify ? { label: "Create first resident", onClick: openCreatePanel } : undefined} />
                 : undefined
             }

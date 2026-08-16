@@ -1,5 +1,6 @@
 import { createHousehold, getNextHouseholdNumber } from '@/api/households'
-import { createResident } from '@/api/residents'
+import { createResident, getResidents } from '@/api/residents'
+import { createDeceasedRecord } from '@/api/deceasedRecords'
 import { createDocument } from '@/api/documents'
 import { createBlotter, getNextCaseNumber } from '@/api/blotter'
 import { createAsset } from '@/api/assets'
@@ -12,6 +13,8 @@ import { createFundSource } from '@/api/fundSources'
 import { createAppropriation } from '@/api/appropriations'
 import { createDisbursement } from '@/api/disbursements'
 import { createRevenue } from '@/api/revenues'
+import { createPersonnel } from '@/api/personnel'
+import { OFFICIAL_POSITIONS, APPOINTEE_POSITIONS } from '@/features/personnel/positions'
 import { getClient } from '@/api/client'
 
 export interface CollectionDef {
@@ -22,6 +25,8 @@ export interface CollectionDef {
 export const AVAILABLE_COLLECTIONS: CollectionDef[] = [
   { id: 'households', label: 'Households' },
   { id: 'residents', label: 'Residents' },
+  { id: 'deceased', label: 'Deceased Records' },
+  { id: 'personnel', label: 'Barangay Officials & Appointees' },
   { id: 'documents', label: 'Document Requests' },
   { id: 'blotter', label: 'Blotter Records' },
   { id: 'assets', label: 'Assets' },
@@ -76,6 +81,16 @@ const RELIGIONS = [
 ]
 
 const CIVIL_STATUSES = ['Single/Never Married', 'Married', 'Widowed', 'Separated'] as const
+
+const UNDERLYING_CAUSES_OF_DEATH = [
+  'Mental', 'Physical', 'Infectious', 'Non-Infectious', 'Deficiency',
+  'Inherited', 'Degenerative', 'Social', 'Self-Inflicted',
+] as const
+
+const IMMEDIATE_CAUSES_OF_DEATH = [
+  'Cardiac arrest', 'Respiratory failure', 'Pneumonia', 'Septic shock',
+  'Acute myocardial infarction', 'Stroke', 'Renal failure',
+] as const
 
 const HOUSEHOLD_TYPES = ['Nuclear Family', 'Extended Family', 'Single/Solo Parent Family', 'Childless Family', 'Blended/Stepfamily', 'Single Person Household']
 
@@ -391,12 +406,69 @@ export async function seedCollections(
           government_assistance_programs: Math.random() > 0.85 ? ['4Ps'] : [],
           senior_citizen: age >= 60,
           pwd: Math.random() > 0.92,
+          single_solo_parent: age >= 18 && Math.random() > 0.9,
           blood_type: pick(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
         })
         residentIds.push(res.id)
         total++
       } catch (e) {
         errors.push(`Resident ${i + 1}: ${extractError(e)}`)
+      }
+    }
+  }
+
+  if (seedSet.has('deceased')) {
+    onProgress('Seeding deceased records...')
+    let pool = residentIds
+    if (pool.length === 0) {
+      try {
+        pool = (await getResidents()).map((r) => r.id)
+      } catch (e) {
+        errors.push(`Deceased: failed to load existing residents: ${extractError(e)}`)
+      }
+    }
+    const deceasedAssignees = pickN(pool, Math.min(3, pool.length))
+    for (let i = 0; i < deceasedAssignees.length; i++) {
+      try {
+        await createDeceasedRecord({
+          inhabitant_id: deceasedAssignees[i],
+          date_of_death: randomDate(1095),
+          immediate_cause_of_death: pick(IMMEDIATE_CAUSES_OF_DEATH),
+          underlying_cause_of_death: pick(UNDERLYING_CAUSES_OF_DEATH),
+        })
+        total++
+      } catch (e) {
+        errors.push(`Deceased record ${i + 1}: ${extractError(e)}`)
+      }
+    }
+  }
+
+  if (seedSet.has('personnel')) {
+    onProgress('Seeding barangay officials & appointees...')
+    let pool = residentIds
+    if (pool.length === 0) {
+      try {
+        pool = (await getResidents()).map((r) => r.id)
+      } catch (e) {
+        errors.push(`Personnel: failed to load existing residents: ${extractError(e)}`)
+      }
+    }
+    if (pool.length === 0) {
+      errors.push('Personnel: no residents available to assign — seed Residents first')
+    }
+    const positions = [...OFFICIAL_POSITIONS, ...pickN(APPOINTEE_POSITIONS, 6)]
+    const assignees = pickN(pool, Math.min(positions.length, pool.length))
+    for (let i = 0; i < assignees.length; i++) {
+      try {
+        await createPersonnel({
+          resident_id: assignees[i],
+          position: positions[i],
+          term_start: randomDate(730),
+          status: 'Active',
+        })
+        total++
+      } catch (e) {
+        errors.push(`Personnel ${i + 1}: ${extractError(e)}`)
       }
     }
   }
@@ -702,6 +774,8 @@ export async function eraseCollections(
     { id: 'visitors', collection: 'visitor_logs' },
     { id: 'blotter', collection: 'blotter_records' },
     { id: 'assets', collection: 'assets' },
+    { id: 'personnel', collection: 'barangay_personnel' },
+    { id: 'deceased', collection: 'deceased_records' },
     { id: 'residents', collection: 'residents' },
     { id: 'meetings', collection: 'agenda_items' },
     { id: 'meetings', collection: 'meetings' },

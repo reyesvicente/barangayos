@@ -7,6 +7,7 @@ import { RecordsPage } from '@/features/records'
 import { ResidentsPage } from '@/features/residents'
 import { HouseholdsPage } from '@/features/households'
 import { DeceasedRecordsPage } from '@/features/deceased'
+import { OfficialsPage, AppointeesPage } from '@/features/personnel'
 import { DocumentsPage, ReleasePage } from '@/features/documents'
 import { SystemSettings } from '@/features/settings'
 import { ActivityPage, VisitorLogPage } from '@/features/logs'
@@ -65,6 +66,22 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute roles={['admin', 'staff']}>
               <DeceasedRecordsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="officials"
+          element={
+            <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <OfficialsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="appointees"
+          element={
+            <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <AppointeesPage />
             </ProtectedRoute>
           }
         />

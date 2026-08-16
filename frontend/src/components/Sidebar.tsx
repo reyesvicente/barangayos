@@ -14,6 +14,8 @@ import {
   ClipboardList,
   DoorOpen,
   Skull,
+  Award,
+  Briefcase,
   Package,
   Calendar,
   BarChart3,
@@ -52,6 +54,13 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: '/residents', label: 'Resident Profiles', icon: Users, roles: ['admin', 'staff', 'viewer'] },
       { to: '/households', label: 'Households', icon: Home, roles: ['admin', 'staff'] },
       { to: '/deceased', label: 'Deceased Records', icon: Skull, roles: ['admin', 'staff'] },
+    ],
+  },
+  {
+    label: 'Barangay Personnel',
+    items: [
+      { to: '/officials', label: 'Officials', icon: Award, roles: ['admin', 'staff', 'viewer'] },
+      { to: '/appointees', label: 'Appointees', icon: Briefcase, roles: ['admin', 'staff', 'viewer'] },
     ],
   },
   {
