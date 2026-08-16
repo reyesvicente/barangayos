@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Loader2, X, Plus, Building2, Users, MapPin, ShieldAlert, CheckCircle2, AlertTriangle, Database, Trash2 } from 'lucide-react'
+import { Loader2, X, Plus, Building2, MapPin, ShieldAlert, CheckCircle2, AlertTriangle, Database, Trash2 } from 'lucide-react'
 import { getClient } from '@/api/client'
 import { upsertSetting, type ApiSetting } from '@/api/settings'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -128,9 +128,6 @@ export default function SystemSettings() {
   const [region, setRegion] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [contactNumber, setContactNumber] = useState('')
-  const [barangayCaptain, setBarangayCaptain] = useState('')
-  const [barangaySecretary, setBarangaySecretary] = useState('')
-  const [barangayTreasurer, setBarangayTreasurer] = useState('')
   const [purokOptions, setPurokOptions] = useState<string[]>([])
   const [incidentTypes, setIncidentTypes] = useState<string[]>([])
 
@@ -145,12 +142,10 @@ export default function SystemSettings() {
 
   const stateRef = useRef({
     barangayName, municipalityCity, province, region, postalCode, contactNumber,
-    barangayCaptain, barangaySecretary, barangayTreasurer,
     purokOptions, incidentTypes, settingIds,
   })
   stateRef.current = {
     barangayName, municipalityCity, province, region, postalCode, contactNumber,
-    barangayCaptain, barangaySecretary, barangayTreasurer,
     purokOptions, incidentTypes, settingIds,
   }
 
@@ -185,9 +180,6 @@ export default function SystemSettings() {
       setRegion(vals.region ?? '')
       setPostalCode(vals.postal_code ?? '')
       setContactNumber(vals.contact_number ?? '')
-      setBarangayCaptain(vals.barangay_captain ?? '')
-      setBarangaySecretary(vals.barangay_secretary ?? '')
-      setBarangayTreasurer(vals.barangay_treasurer ?? '')
       setPurokOptions(vals.purok_options ?? [])
       setIncidentTypes(vals.incident_types ?? [])
     } catch (err) {
@@ -211,9 +203,6 @@ export default function SystemSettings() {
       ['region', s.region],
       ['postal_code', s.postalCode],
       ['contact_number', s.contactNumber],
-      ['barangay_captain', s.barangayCaptain],
-      ['barangay_secretary', s.barangaySecretary],
-      ['barangay_treasurer', s.barangayTreasurer],
       ['purok_options', s.purokOptions],
       ['incident_types', s.incidentTypes],
     ]
@@ -356,20 +345,6 @@ export default function SystemSettings() {
               <SettingsField label="Contact No." value={contactNumber} onChange={onChange(setContactNumber)} placeholder="e.g. 0917..." />
             </div>
           </div>
-        </section>
-
-        <section className="rounded-lg border bg-card shadow-sm motion-fade-in motion-slide-up" style={{ animationDelay: '75ms' }}>
-          <div className="flex items-center gap-2 border-b border-bamboo/40 px-4 py-2.5 dark:border-bamboo/20">
-            <Users className="size-4 text-muted-foreground/60" />
-            <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
-              Barangay Officials
-            </h2>
-          </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3">
-              <SettingsField label="Barangay Captain" value={barangayCaptain} onChange={onChange(setBarangayCaptain)} placeholder="Full name" />
-              <SettingsField label="Barangay Secretary" value={barangaySecretary} onChange={onChange(setBarangaySecretary)} placeholder="Full name" />
-              <SettingsField label="Barangay Treasurer" value={barangayTreasurer} onChange={onChange(setBarangayTreasurer)} placeholder="Full name" />
-            </div>
         </section>
 
         <section className="rounded-lg border bg-card shadow-sm motion-fade-in motion-slide-up" style={{ animationDelay: '150ms' }}>
