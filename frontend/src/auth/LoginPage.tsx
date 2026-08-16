@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router'
 import { AlertCircle, Eye, EyeOff, User } from 'lucide-react'
 import { login } from './session'
 
-function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Magandang Umaga'
-  if (hour < 18) return 'Magandang Hapon'
-  return 'Magandang Gabi'
-}
-
 export default function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('admin@example.com')
@@ -17,7 +10,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [greeting] = useState(getGreeting)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -51,14 +43,6 @@ export default function LoginPage() {
           <span className="font-display text-base font-bold text-white">Manila Barangay Management System</span>
         </div>
 
-        {/* Illustration — fills the entire panel */}
-        <img
-          src="https://cdn.dribbble.com/userupload/42085661/file/original-7086befc217a7928cfaa501e785be39b.png"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-          aria-hidden="true"
-        />
-
         {/* Bottom accent line */}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex h-[3px]" aria-hidden="true">
           <div className="h-full w-[34%] bg-red-pinoy/60" />
@@ -79,12 +63,6 @@ export default function LoginPage() {
             />
             <p className="mt-3 font-display text-2xl font-bold text-barangay">
               Manila Barangay Management System
-            </p>
-            <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.2em] text-narra">
-              {greeting}
-            </p>
-            <p className="mt-1 font-display text-sm text-gray-500">
-              Barangay Records Management System
             </p>
           </div>
 
